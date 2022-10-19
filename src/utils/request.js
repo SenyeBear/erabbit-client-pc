@@ -33,7 +33,7 @@ instance.interceptors.request.use(config => {
 // 响应拦截器
 instance.interceptors.response.use(res => {
   // 解构出响应数据 axios默认包一层data
-  const { data } = res.data
+  const { data } = res
   return data
 }, err => {
   // 处理响应错误的函数
@@ -54,7 +54,7 @@ instance.interceptors.response.use(res => {
 })
 
 // 由于基地址可能不止在向后台发送请求时使用 向oss（object storage service）请求图片时也可能用到 因此导出
-export const baseURL = 'http://pcapi-xiaotuxian-front.itheima.net'
+export const baseURL = 'http://pcapi-xiaotuxian-front-devtest.itheima.net'
 
 // 请求工具函数
 export default (url, method, submitData) => {
