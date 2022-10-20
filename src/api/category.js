@@ -6,3 +6,19 @@ import request from '@/utils/request'
 export const findAllCategory = () => {
   return request('/home/category/head', 'GET')
 }
+
+/**
+ * 获取顶级类目数据
+ * @param {String} id - 顶级类目Id
+ */
+export const findTopCategory = (id) => {
+  return request('/category', 'GET', { id })
+}
+
+/**
+ * 获取二级类目筛选数据
+ * @param {String} id - 二级类目Id
+ */
+export const findSubCategoryFilter = (id) => {
+  return request('/category/sub/filter', 'GET', { id })
+}
