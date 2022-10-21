@@ -22,3 +22,11 @@ export const findTopCategory = (id) => {
 export const findSubCategoryFilter = (id) => {
   return request('/category/sub/filter', 'GET', { id })
 }
+
+/**
+ * 获取二级类目商品（带筛选条件）
+ * @param {Object} params - 请求参数
+ */
+export const findSubCategoryGoods = (params) => {
+  return request('/category/goods/temporary', 'POST', params)
+}

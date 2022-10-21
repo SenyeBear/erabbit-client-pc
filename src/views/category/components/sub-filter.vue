@@ -1,15 +1,17 @@
 <template>
    <div class="sub-filter" v-if="filterData && !filterLoading">
+      <!-- 所有品牌 -->
       <div class="item">
         <div class="head">品牌：</div>
         <div class="body">
-          <a @click="item.properties.selectedProp = item.id" :class="{active: item.id === filterData.brands.selectedBrand}" href="javascript:;"  v-for="item in filterData.brands" :key="item.id">{{item.name}}</a>
+          <a @click="changeBrand(item.id)" :class="{active: item.id === filterData.brands.selectedBrand}" href="javascript:;"  v-for="item in filterData.brands" :key="item.id">{{item.name}}</a>
         </div>
       </div>
+      <!-- 所有规格 -->
      <div class="item" v-for="item in filterData.saleProperties" :key="item.id">
        <div class="head">{{item.name}}</div>
        <div class="body">
-         <a @click="item.properties.selectedProp = prop.id" :class="{active: prop.id === item.properties.selectedProp}"></a>
+         <a @click="changeFilter(item, prop.id)" :class="{active: prop.id === item.properties.selectedProp}" v-for="prop in item.properties" :key="prop.id">{{prop.name}}</a>
        </div>
      </div>
    </div>
@@ -29,7 +31,7 @@ import { useRoute } from 'vue-router'
 import { findSubCategoryFilter } from '@/api/category'
 export default {
   name: 'SubFilter',
-  setup () {
+  setup (props, { emit }) {
     const route = useRoute()
     // 控制筛选区显示
     const filterLoading = ref(false)
@@ -59,8 +61,39 @@ export default {
     }, {
       immediate: true
     })
+    // 获取筛选数据的函数
+    const getFilterParams = () => {
+      const filterParams = { brandId: '', attrs: [] }
+      // 1.修改品牌属性
+      if (filterData.value.brands) {
+        filterParams.brandId = filterData.value.brands.selectedBrand // 其实默认就是全部就是null
+      }
+      // 2.修改属性条件
+      filterData.value.saleProperties.forEach(item => {
+        const prop = item.properties.find(prop => prop.id === item.properties.selectedProp)
+        if (prop && prop.id !== undefined) {
+          filterParams.attrs.push({ groupName: item.name, propertyName: prop.name })
+        }
+      })
+      // return前可以检验一下brandId是否为空 null不会发送给后台
+      // if (filterParams.brandId.length === 0) filterParams.brandId = null
+      return filterParams
+    }
+    const changeBrand = (brandId) => {
+      // 如果重复点击同一个品牌 停止运行
+      if (filterData.value.selectedBrand === brandId) return
+      filterData.value.brands.selectedBrand = brandId
+      emit('filter-change', getFilterParams())
+    }
 
-    return { filterData, filterLoading }
+    const changeFilter = (item, propId) => {
+      // 如果重复点击同一个属性 停止运行
+      if (item.properties.selectedProp === propId) return
+      item.properties.selectedProp = propId
+      emit('filter-change', getFilterParams())
+    }
+
+    return { filterData, filterLoading, changeBrand, changeFilter }
   }
 }
 </script>
