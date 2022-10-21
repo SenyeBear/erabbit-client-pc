@@ -4,6 +4,7 @@ const Layout = () => import('@/views/Layout')
 const Home = () => import('@/views/home')
 const TopCategory = () => import('@/views/category')
 const SubCategory = () => import('@/views/category/sub-category')
+const Goods = () => import('@/views/goods/index')
 // 路由规则
 const routes = [
   {
@@ -21,6 +22,10 @@ const routes = [
       {
         path: '/category/sub/:id',
         component: SubCategory
+      },
+      {
+        path: '/product/:id',
+        component: Goods
       }
     ]
   }
