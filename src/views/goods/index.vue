@@ -16,6 +16,8 @@
         </div>
         <div class="spec">
           <GoodName :goods="goods"/>
+          <!-- sku组件 -->
+          <GoodsSku :goods="goods"/>
         </div>
       </div>
       <!-- 商品推荐 -->
@@ -42,10 +44,11 @@ import GoodsRelevant from './components/goods-relevant'
 import GoodsImage from './components/goods-image'
 import GoodsSales from './components/goods-sale'
 import GoodName from './components/goods-name'
+import GoodsSku from './components/goods-sku'
 import { findGoods } from '@/api/product'
 export default {
   name: 'XtxGoodsPage',
-  components: { GoodsRelevant, GoodsImage, GoodsSales, GoodName },
+  components: { GoodsRelevant, GoodsImage, GoodsSales, GoodName, GoodsSku },
   setup () {
     // 1.获取商品详情 进行渲染
     const goods = useGoods()
