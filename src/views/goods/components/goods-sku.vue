@@ -71,22 +71,36 @@ const updateDisabledStatus = (specs, pathMap) => {
       selectedValues[i] = val.name
       // 4.剔除数组中undefined数据 按分隔符拼接key （filter内return undefined转为布尔值为false，undefined元素被筛掉）
       const key = selectedValues.filter(val => val).join(spliter)
-      console.log(pathMap)
-      console.log(key)
       // 5.拿着key去pathMap查找是否存在数据 有就可以点击 没有就禁用
       val.disabled = !pathMap[key]
     })
   })
 }
+
+// 默认选中sku的方法
+// const initDefaultSelected = (goods, skuId) => {
+//   // 1.找出sku的信息
+//   // 2.遍历每个span 值和sku记录相同的就选中
+//   const sku = goods.skus.find(sku => sku.id === skuId)
+//   console.log(sku)
+//   goods.specs.forEach((item, i) => {
+//     const val = item.values.find(val => val.name === sku.specs[i].valueName)
+//     val.selected = true
+//   })
+// }
 export default {
   name: 'GoodsSku',
   props: {
     goods: {
       type: Object,
       default: () => ({})
+    },
+    skuId: {
+      type: String,
+      default: ''
     }
   },
-  setup (props) {
+  setup (props, { emit }) {
     // 1.点击规格选项 选中与取消选中 约定每一个按钮都拥有自己的选中状态数据 selected
     // 1.1 点击已选中按钮 取消当前选中即可
     // 1.2 点击未选中按钮 排他 取消当前规格下其他选中 留下当前选中
@@ -102,17 +116,38 @@ export default {
       }
       // 点击span:更新span禁用状态
       updateDisabledStatus(props.goods.specs, pathMap)
+      // 点击span：将选择的sku信息通知父组件 {skuId, price, oldPrice, inventory, specsText}
+      // 1.选择完整sku才能拿到信息传给父组件
+      // 2.不完整sku 提交空对象给父组件
+      const validSelectedValues = getSelectedValues(props.goods.specs).filter(val => val)
+      if (validSelectedValues.length === props.goods.specs.length) {
+        // 在路径字典找出skuId pathMap存入的是一个数组 key=>[a] 因为validSelectedValues是完整路径所以数组只有一个元素
+        const skuIds = pathMap[validSelectedValues.join(spliter)]
+        const sku = props.goods.skus.find(sku => sku.id === skuIds[0])
+        emit('change', {
+          skuId: sku.id,
+          price: sku.price,
+          oldPrice: sku.oldPrice,
+          inventory: sku.inventory,
+          specsText: (sku.specs.reduce((p, c) => `${p} ${c.name}: ${c.valueName}`, '')).trim()
+        })
+      } else { // 传空值让父组件判断规格选择是否完整 判断能不能加购物车
+        emit('change', {})
+      }
     }
-
     // 调用得到路径字典对象的方法
     const pathMap = getPathMap(props.goods.skus)
 
     // 组件初始化:更新span禁用状态
     updateDisabledStatus(props.goods.specs, pathMap)
+
+    // 根据skuId初始化选中
+    // initDefaultSelected(props.goods, props.skuId)
     return { changeSku }
   }
 }
 </script>
+
 <style scoped lang="less">
 .sku-state-mixin () {
   border: 1px solid #e4e4e4;

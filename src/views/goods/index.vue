@@ -17,7 +17,11 @@
         <div class="spec">
           <GoodName :goods="goods"/>
           <!-- sku组件 -->
-          <GoodsSku :goods="goods"/>
+          <GoodsSku :goods="goods" @change="changeSku"/>
+          <!-- 数量组件 -->
+          <XtxNumbox label="数量" v-model="num" :max="goods.inventory"/>
+          <!-- 按钮组件 -->
+          <XtxButton type="primary" style="margin-top:20px;">加入购物车</XtxButton>
         </div>
       </div>
       <!-- 商品推荐 -->
@@ -26,33 +30,55 @@
       <div class="goods-footer">
         <div class="goods-article">
           <!-- 商品+评价 -->
-          <div class="goods-tabs"></div>
+          <GoodsTabs />
           <!-- 注意事项 -->
-          <div class="goods-warn"></div>
+          <GoodsWarn />
         </div>
         <!-- 24热榜+专题推荐 -->
-        <div class="goods-aside"></div>
+        <div class="goods-aside">
+          <GoodsHot :type="1" />
+          <GoodsHot :type="2" />
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { nextTick, ref, watch } from 'vue'
+import { nextTick, ref, watch, provide } from 'vue'
 import { useRoute } from 'vue-router'
 import GoodsRelevant from './components/goods-relevant'
 import GoodsImage from './components/goods-image'
 import GoodsSales from './components/goods-sale'
 import GoodName from './components/goods-name'
 import GoodsSku from './components/goods-sku'
+import GoodsTabs from './components/goods-tabs'
+import GoodsHot from './components/goods-hot'
+import GoodsWarn from './components/goods-warn.vue'
 import { findGoods } from '@/api/product'
 export default {
   name: 'XtxGoodsPage',
-  components: { GoodsRelevant, GoodsImage, GoodsSales, GoodName, GoodsSku },
+  components: { GoodsRelevant, GoodsImage, GoodsSales, GoodName, GoodsSku, GoodsTabs, GoodsHot, GoodsWarn },
   setup () {
     // 1.获取商品详情 进行渲染
     const goods = useGoods()
-    return { goods }
+
+    // 接收子组件改变sku的函数
+    const changeSku = (sku) => {
+      // 修改商品的现价原价库存信息
+      if (sku.skuId) {
+        goods.value.price = sku.price
+        goods.value.oldPrice = sku.oldPrice
+        goods.value.inventory = sku.inventory
+      }
+    }
+
+    // 提供goods数据给后代使用
+    provide('goods', goods)
+
+    // 数量组件的默认值
+    const num = ref(1)
+    return { goods, num, changeSku }
   }
 
 }
