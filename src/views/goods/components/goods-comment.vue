@@ -1,5 +1,5 @@
 <template>
-  <div class="goods-comment">
+  <div class="goods-comment" >
     <div class="head" v-if="commentInfo">
       <div class="data">
         <p><span>{{commentInfo.salesCount}}</span><span>人购买</span></p>
@@ -18,7 +18,7 @@
         </div>
       </div>
     </div>
-    <div class="sort">
+    <div class="sort" v-if="commentInfo">
       <span>排序：</span>
       <a href="javascript:;" :class="{active: reqParams.sortField === null}" @click="changeSort(null)">默认</a>
       <a href="javascript:;" :class="{active: reqParams.sortField === 'createTime'}"  @click="changeSort('createTime')">最新</a>
@@ -38,6 +38,8 @@
             <span class="attr">{{formatSpecs(item.orderInfo.specs)}}</span>
           </div>
           <div class="text">{{item.content}}</div>
+          <!-- 评论图片组件 -->
+          <GoodsCommentImage v-if="item.pictures.length" :pictures="item.pictures" />
           <div class="time">
             <span>{{item.createTime}}</span>
             <span class="zan"><i class="iconfont icon-dianzan"></i>{{item.praiseCount}}</span>
@@ -45,13 +47,19 @@
         </div>
       </div>
     </div>
+    <!-- 分页组件 -->
+    <XtxPagination :total="total" :pageSize="reqParams.pageSize" :current-page="reqParams.page" @current-change="changePagerFn" v-if="commentInfo"/>
   </div>
 </template>
 <script>
 import { ref, inject, reactive, watch } from 'vue'
 import { findGoodsCommentInfo, findGoodsCommentList } from '@/api/product'
+import GoodsCommentImage from './goods-comment-image.vue'
 export default {
   name: 'GoodsComment',
+  components: {
+    GoodsCommentImage
+  },
   setup () {
     // 获取评价信息
     const commentInfo = ref(null) // 对于不知道获取的数据是什么类型统一用null
@@ -105,11 +113,14 @@ export default {
 
     // 初始化发请求,筛选评论
     const commentList = ref([])
+    const total = ref(0)
+    // 监听reqParams变化重新发请求
     watch(reqParams, () => {
       // 页面重置为1 每次筛选条件变化时都应从第一页开始浏览
       // reqParams.page = 1 不建议放在watch里,因为本身监听的就是reqParams又在watch回调函数里修改reqParams不好 容易又触发一次watch 这里没触发因为本身设置的page值就是1 相当于没变
       findGoodsCommentList(goods.id, reqParams).then(data => {
         commentList.value = data.result.items
+        total.value = data.result.counts
       })
     }, { immediate: true })
 
@@ -120,7 +131,12 @@ export default {
     const formatNickName = (nickname) => {
       return nickname.substr(0, 1) + '****' + nickname.substr(-1)
     }
-    return { commentInfo, currentTagIndex, reqParams, commentList, changeTag, changeSort, formatSpecs, formatNickName }
+
+    // 实现分页切换
+    const changePagerFn = (newPage) => {
+      reqParams.page = newPage // 修改reqParams的page 就会自动触发watch发请求
+    }
+    return { commentInfo, currentTagIndex, reqParams, commentList, total, changeTag, changeSort, changePagerFn, formatSpecs, formatNickName }
   }
 }
 </script>

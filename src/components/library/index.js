@@ -11,6 +11,8 @@
 // 图片懒加载设置的默认图片
 import defaultImg from '@/assets/images/200.png'
 
+import Message from './message'
+
 // 使用Es6 commonjs语法 require的context方法 实现批量注册组件
 // context(目录路径, 是否加载子目录, 加载文件的匹配正则)
 const importFn = require.context('./', false, /\.vue$/)
@@ -30,6 +32,8 @@ export default {
 
     // 定义指令
     defineDirective(app)
+    // 将消息提示组件挂载到app实例原型
+    app.config.globalProperties.$message = Message
   }
 }
 
