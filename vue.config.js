@@ -13,7 +13,7 @@ module.exports = defineConfig({
         path.join(__dirname, './src/assets/styles/mixins.less')
       ]
     }
-  }
+  },
   // 配置：把10kb以下图片转为base64格式 vuecli创建的webpack模板自动将10kb以下图片转为base64 因此可以不加这段配置
   // chainWebpack: config => {
   //   config.module
@@ -23,4 +23,17 @@ module.exports = defineConfig({
   //     .tap(options => Object.assign(options, { limit: 10000 }))
   // }
   // 写了报错 object为undefined or null
-})
+
+  // 这个是给webpack-dev-server开启IP和域名访问权限。
+  devServer: {
+    historyApiFallback: true,
+    allowedHosts: 'all'
+  },
+  // 配置排除打包
+  configureWebpack: {
+    externals: {
+      qc: 'QC'
+    }
+  }
+}
+)

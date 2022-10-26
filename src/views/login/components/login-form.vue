@@ -42,7 +42,7 @@
           <div class="input">
             <i class="iconfont icon-code"></i>
             <Field name="code" v-model="form.code" type="text" placeholder="请输入验证码" />
-            <span class="code">发送验证码</span>
+            <span class="code" @click="send">{{time === 0 ? '发送验证码' : time}}</span>
           </div>
           <!-- 错误提示 -->
           <div class="error" v-if="errors.code"><i class="iconfont icon-warning" />{{errors.code}}</div>
@@ -63,7 +63,10 @@
       <a @click="login" href="javascript:;" class="btn">登录</a>
     </Form>
     <div class="action">
-      <img src="https://qzonestyle.gtimg.cn/qzone/vas/opensns/res/img/Connect_logo_7.png" alt="">
+      <!-- qq登录 -->
+      <a href="https://graph.qq.com/oauth2.0/authorize?client_id=100556005&response_type=token&scope=all&redirect_uri=http%3A%2F%2Fwww.corho.com%3A8080%2F%23%2Flogin%2Fcallback">
+        <img src="https://qzonestyle.gtimg.cn/qzone/vas/opensns/res/img/Connect_logo_7.png" alt="">
+      </a>
       <div class="url">
         <a href="javascript:;">忘记密码</a>
         <a href="javascript:;">免费注册</a>
@@ -73,10 +76,15 @@
 </template>
 
 <script>
-import { ref, reactive, watch } from 'vue'
+import { ref, reactive, watch, onUnmounted } from 'vue'
 import { Form, Field } from 'vee-validate'
 import schema from '@/utils/vee-validate-schema'
 import Message from '@/components/library/message'
+import { useStore } from 'vuex'
+import { useRouter, useRoute } from 'vue-router'
+import { userAccountLogin, userMobileLoginMsg, userMobileLogin } from '@/api/user'
+import { useIntervalFn } from '@vueuse/core'
+// import QC from 'qc'
 export default {
   name: 'LoginForm',
   components: {
@@ -123,13 +131,76 @@ export default {
     // console.log(proxy)
     // proxy.$message({ text: '测试' })
     // 点击登录按钮 对表单进行整体校验
+    const store = useStore()
+    const router = useRouter()
+    const route = useRoute()
     const login = async () => {
       // 调用Form组件提供的validate() 返回一个promise
       const valid = await formCom.value.validate()
-      console.log(valid)
-      Message({ type: 'success', text: '用户名或密码错误' })
+      try {
+        // 校验成功请求登录
+        let data = null
+        if (valid) {
+        // 区分点击登录是手机登录还是账号密码登录
+          if (isMsgLogin.value) {
+          // 手机号登录
+            const { mobile, code } = form
+            data = await userMobileLogin({ mobile, code })
+          } else {
+          // 账号密码登录
+            const { account, password } = form
+            data = await userAccountLogin({ account, password })
+          }
+          // 1.存储用户信息
+          const { id, account, avatar, mobile, nickname, token } = data.result
+          store.commit('user/setUser', { id, account, avatar, mobile, nickname, token })
+          // 2.跳转到首页或来源页
+          router.push(route.query.redirectUrl || '/')
+          // 3.消息提示
+          Message({ type: 'success', text: '登录成功' })
+        }
+      } catch (err) {
+        if (err.response.data) {
+          Message({ type: 'error', text: err.response.data.message || '登录失败' })
+        }
+      }
     }
-    return { isMsgLogin, form, mySchema, formCom, login }
+    // 利用vueuse的useIntervalFn简化使用定时器
+    // 设置倒计时秒数
+    const time = ref(0)
+    const { pause, resume } = useIntervalFn(() => {
+      time.value--
+      if (time.value <= 0) {
+        pause()
+      }
+    }, 1000, false)// 不立即开启
+    // 组件销毁时也要清除定时器
+    onUnmounted(() => {
+      pause()
+    })
+    // 发送手机验证码的函数
+    const send = async () => {
+      // 利用vee-validate-schema的校验函数对象校验手机号格式
+      const valid = mySchema.mobile(form.mobile) // 返回true 或者 错误信息的字符串
+      if (valid === true) {
+        // 没有在倒计时才能点击发送
+        if (time.value === 0) {
+          await userMobileLoginMsg(form.mobile)
+          Message({ type: 'success', text: '发送成功' })
+          time.value = 60
+          resume()
+        }
+      } else {
+        // 失败时使用vee的错误函数提示错误信息 setFieldError(字段，错误信息) Message组件一般是请求时用 校验时直接用vee
+        formCom.value.setFieldError('mobile', valid)
+      }
+    }
+
+    // 初始化qq登录按钮 获得url
+    // onMounted(() => {
+    //   QC.Login({ btnId: 'qqLoginBtn' })
+    // })
+    return { isMsgLogin, form, mySchema, formCom, login, send, time }
   }
 }
 
