@@ -1,4 +1,5 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
+import store from '@/store'
 // 动态导入组件
 const Layout = () => import('@/views/Layout')
 const Home = () => import('@/views/home')
@@ -61,4 +62,14 @@ const router = createRouter({
   }
 })
 
+// 前置导航守卫
+router.beforeEach((to, from, next) => {
+  // 判断登录状态 约定需要登录的路由 地址以/member开头
+  const { profile } = store.state.user
+  if (!profile.token && to.path.startsWith('/member')) {
+    // 记录登录完的回跳地址
+    return next('/login?redirectUrl=' + encodeURIComponent(to.fullPath))
+  }
+  next()
+})
 export default router

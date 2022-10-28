@@ -78,16 +78,17 @@ const updateDisabledStatus = (specs, pathMap) => {
 }
 
 // 默认选中sku的方法
-// const initDefaultSelected = (goods, skuId) => {
-//   // 1.找出sku的信息
-//   // 2.遍历每个span 值和sku记录相同的就选中
-//   const sku = goods.skus.find(sku => sku.id === skuId)
-//   console.log(sku)
-//   goods.specs.forEach((item, i) => {
-//     const val = item.values.find(val => val.name === sku.specs[i].valueName)
-//     val.selected = true
-//   })
-// }
+const initDefaultSelected = (goods, skuId) => {
+  // 1.找出sku的信息
+  // 2.遍历每个span 值和sku记录相同的就选中
+  const sku = goods.skus.find(sku => sku.id === skuId)
+  if (sku) {
+    goods.specs.forEach((item, i) => {
+      const val = item.values.find(val => val.name === sku.specs[i].valueName)
+      val.selected = true
+    })
+  }
+}
 export default {
   name: 'GoodsSku',
   props: {
@@ -142,7 +143,7 @@ export default {
     updateDisabledStatus(props.goods.specs, pathMap)
 
     // 根据skuId初始化选中
-    // initDefaultSelected(props.goods, props.skuId)
+    initDefaultSelected(props.goods, props.skuId)
     return { changeSku }
   }
 }

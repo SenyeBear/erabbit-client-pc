@@ -63,10 +63,12 @@ export default {
           // 1.存储用户信息
           const { id, account, avatar, mobile, nickname, token } = data.result
           store.commit('user/setUser', { id, account, avatar, mobile, nickname, token })
-          // 2.跳转到首页或来源页
-          router.push(store.state.user.redirectUrl)
-          // 3.消息提示
-          Message({ type: 'success', text: 'QQ登录成功' })
+          store.dispatch('cart/mergeCart').then(() => {
+            // 2.跳转到首页或来源页
+            router.push(store.state.user.redirectUrl)
+            // 3.消息提示
+            Message({ type: 'success', text: 'QQ登录成功' })
+          })
         }).catch(err => {
           // 登录失败 表示该qq号未和系统绑定
           isBind.value = false

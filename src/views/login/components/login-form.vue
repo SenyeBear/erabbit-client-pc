@@ -154,10 +154,12 @@ export default {
           // 1.存储用户信息
           const { id, account, avatar, mobile, nickname, token } = data.result
           store.commit('user/setUser', { id, account, avatar, mobile, nickname, token })
-          // 2.跳转到首页或来源页
-          router.push(route.query.redirectUrl || '/')
-          // 3.消息提示
-          Message({ type: 'success', text: '登录成功' })
+          store.dispatch('cart/mergeCart').then(() => {
+            // 2.跳转到首页或来源页
+            router.push(route.query.redirectUrl || '/')
+            // 3.消息提示
+            Message({ type: 'success', text: '登录成功' })
+          })
         }
       } catch (err) {
         if (err.response.data) {
