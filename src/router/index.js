@@ -9,7 +9,7 @@ const Goods = () => import('@/views/goods/index')
 const Login = () => import('@/views/login/index')
 const LoginCallback = () => import('@/views/login/callback')
 const Cart = () => import('@/views/cart')
-
+const Checkout = () => import('@/views/member/pay/checkout')
 // 路由规则
 const routes = [
   {
@@ -35,6 +35,10 @@ const routes = [
       {
         path: '/cart',
         component: Cart
+      },
+      {
+        path: 'member/checkout',
+        component: Checkout
       }
 
     ]
