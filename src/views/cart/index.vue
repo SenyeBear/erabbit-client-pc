@@ -86,7 +86,7 @@
         </div>
         <div class="total">
           共 {{$store.getters['cart/validTotal']}} 件商品，已选择 {{$store.getters['cart/selectedTotal']}} 件，商品合计：
-          <span class="red">¥{{$store.getters['cart/validAmount']}}</span>
+          <span class="red">¥{{$store.getters['cart/selectedAmount']}}</span>
           <XtxButton @click="checkout" type="primary">下单结算</XtxButton>
         </div>
       </div>

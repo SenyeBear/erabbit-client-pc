@@ -11,5 +11,8 @@ import '@/assets/styles/common.less'
 // 引入我们自己封装的UI库
 import ui from '@/components/library/index'
 
+// mockjs
+// import '@/mock'
+
 // 注册使用
 createApp(App).use(store).use(router).use(ui).mount('#app')

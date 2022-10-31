@@ -1,5 +1,7 @@
-import { createRouter, createWebHashHistory } from 'vue-router'
+import { createRouter, createWebHashHistory, RouterView } from 'vue-router'
+// RouterView不是原生标签 因此还需要引入使用
 import store from '@/store'
+import { h } from 'vue'
 // 动态导入组件
 const Layout = () => import('@/views/Layout')
 const Home = () => import('@/views/home')
@@ -10,6 +12,12 @@ const Login = () => import('@/views/login/index')
 const LoginCallback = () => import('@/views/login/callback')
 const Cart = () => import('@/views/cart')
 const Checkout = () => import('@/views/member/pay/checkout')
+const Pay = () => import('@/views/member/pay')
+const Result = () => import('@/views/member/pay/result')
+const MemberLayout = () => import('@/views/member/Layout')
+const MemberHome = () => import('@/views/member/home/index.vue')
+const MemberOrder = () => import('@/views/member/order')
+const MemberOrderDetail = () => import('@/views/member/order/detail')
 // 路由规则
 const routes = [
   {
@@ -39,8 +47,48 @@ const routes = [
       {
         path: 'member/checkout',
         component: Checkout
+      },
+      {
+        path: 'member/pay',
+        component: Pay
+      },
+      {
+        path: '/pay/callback',
+        component: Result
+      },
+      {
+        path: '/member',
+        component: MemberLayout,
+        children: [{
+          path: '/member',
+          component: MemberHome
+        },
+        // vue2.0可以的写法
+        // {
+        //   path: '/member/order',
+        //   component: MemberOrder
+        // },
+        // {
+        //   path: '/member/order/:id',
+        //   component: MemberOrderDetail
+        // }
+        // vue3.0 必须用嵌套
+        {
+          path: '/member/order',
+          component: { render: () => h(<RouterView />) },
+          children: [
+            {
+              path: '',
+              component: MemberOrder
+            },
+            {
+              path: ':id',
+              component: MemberOrderDetail
+            }
+          ]
+        }
+        ]
       }
-
     ]
   },
   {
