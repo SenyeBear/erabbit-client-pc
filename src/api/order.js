@@ -3,7 +3,7 @@
 import request from '@/utils/request'
 
 /**
- * 结算页面 - 生成订单
+ * 结算页面 - 根据购物车商品生成订单
  * @returns
  */
 export const createOrder = () => {
@@ -76,6 +76,33 @@ export const cancelOrder = (orderId, cancelReason) => {
  * @param {Array<string>} ids - 删除订单，id集合
  * @returns
  */
-export const delteOrder = (ids) => {
+export const deleteOrder = (ids) => {
   return request('/member/order', 'delete', { ids })
+}
+
+/**
+ * 确认收货
+ * @param {String} orderId - 订单ID
+ * @returns Promise
+ */
+export const confirmOrder = (orderId) => {
+  return request(`/member/order/${orderId}/receipt`, 'put')
+}
+
+/**
+ * 查看物流
+ * @param {String} id - 订单ID
+ * @returns
+ */
+export const logisticsOrder = (id) => {
+  return request(`/member/order/${id}/logistics`, 'get')
+}
+
+/**
+ * 获取再次购买的订单结算信息
+ * @param {String} id - 订单ID
+ * @returns
+ */
+export const findOrderRepurchase = (id) => {
+  return request(`/member/order/repurchase/${id}`, 'get')
 }

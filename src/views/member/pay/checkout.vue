@@ -80,9 +80,9 @@
 </template>
 <script>
 import { ref, reactive } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import CheckoutAddress from './components/checkout-address.vue'
-import { createOrder, submitOrder } from '@/api/order'
+import { createOrder, submitOrder, findOrderRepurchase } from '@/api/order'
 import Message from '@/components/library/message.js'
 
 export default {
@@ -90,11 +90,22 @@ export default {
   components: { CheckoutAddress },
   setup () {
     // 结算功能-生成订单-订单信息
+    // 判断是根据购物车生成 还是 按照订单信息生成
+    const route = useRoute()
     const order = ref(null)
-    createOrder().then(data => {
-      order.value = data.result
-      reqParams.goods = data.result.goods.map(({ skuId, count }) => ({ skuId, count }))
-    })
+    if (route.query.orderId) {
+      // 按照订单商品信息生成订单
+      findOrderRepurchase(route.query.orderId).then(data => {
+        order.value = data.result
+        reqParams.goods = data.result.goods.map(({ skuId, count }) => ({ skuId, count }))
+      })
+    } else {
+      // 按照购物车商品信息生成订单
+      createOrder().then(data => {
+        order.value = data.result
+        reqParams.goods = data.result.goods.map(({ skuId, count }) => ({ skuId, count }))
+      })
+    }
 
     // 结算功能-提交订单-提交信息
     const reqParams = reactive({
